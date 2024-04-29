@@ -11,6 +11,8 @@ use serde::Deserialize;
 use tower_cookies::CookieManagerLayer;
 use tower_http::services::ServeDir;
 
+use crate::model::ModelController;
+
 // Re-export
 pub use self::error::{Error, Result};
 mod error;
@@ -19,10 +21,15 @@ mod web;
 mod model;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
+    let mc = ModelController::new().await?;
+
+    let routes_api = web::routes_tickets::routes(mc.clone());
+        
     let routes_all = Router::new()
         .merge(routes_hello())
         .merge(web::routes_login::routes())
+        .nest("/api", routes_api)
         // Layers are executed from bottom to top
         .layer(middleware::map_response(main_response_mapper))
         .layer(CookieManagerLayer::new())
@@ -33,6 +40,8 @@ async fn main() {
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, routes_all).await.unwrap();
+
+    Ok(())
 }
 
 // region -- Handler Hello
