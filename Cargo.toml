@@ -17,6 +17,9 @@ tower-cookies = "0.10"
 serde = { version = "1", features = ["derive"]}
 serde_json = "1"
 
+# Others
+lazy-regex = "2"
+
 [dev-dependencies]
 anyhow = "1"
 httpc-test = "0.1.1"
