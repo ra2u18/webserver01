@@ -8,6 +8,7 @@ use axum::response::{Html, Response};
 use axum::routing::get_service;
 use axum::{routing::get, Router};
 use serde::Deserialize;
+use tower_cookies::CookieManagerLayer;
 use tower_http::services::ServeDir;
 
 // Re-export
@@ -15,13 +16,16 @@ pub use self::error::{Error, Result};
 mod error;
 
 mod web;
+mod model;
 
 #[tokio::main]
 async fn main() {
     let routes_all = Router::new()
         .merge(routes_hello())
         .merge(web::routes_login::routes())
+        // Layers are executed from bottom to top
         .layer(middleware::map_response(main_response_mapper))
+        .layer(CookieManagerLayer::new())
         .fallback_service(routes_static());
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
